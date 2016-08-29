@@ -7,68 +7,78 @@
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    <table class="adminContent">
-    <tr>
-        <td colspan="2">
-            <b>Please ensure that nopCommerce primary currency matches CyberSource currency.</b>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            IPN Handler URL should be set to http://www.yourStore.com/Plugins/PaymentCyberSource/IPNHandler/
-        </td>
-    </tr>
-        <tr>
-            <td class="adminTitle">
-                @Html.NopLabelFor(model => model.GatewayUrl):
-            </td>
-            <td class="adminData">
-                @Html.EditorFor(model => model.GatewayUrl)
-                @Html.ValidationMessageFor(model => model.GatewayUrl)
-            </td>
-        </tr>
-        <tr>
-            <td class="adminTitle">
-                @Html.NopLabelFor(model => model.MerchantId):
-            </td>
-            <td class="adminData">
-                @Html.EditorFor(model => model.MerchantId)
-                @Html.ValidationMessageFor(model => model.MerchantId)
-            </td>
-        </tr>
-        <tr>
-            <td class="adminTitle">
-                @Html.NopLabelFor(model => model.PublicKey):
-            </td>
-            <td class="adminData">
-                @Html.EditorFor(model => model.PublicKey)
-                @Html.ValidationMessageFor(model => model.PublicKey)
-            </td>
-        </tr>
-        <tr>
-            <td class="adminTitle">
-                @Html.NopLabelFor(model => model.SerialNumber):
-            </td>
-            <td class="adminData">
-                @Html.EditorFor(model => model.SerialNumber)
-                @Html.ValidationMessageFor(model => model.SerialNumber)
-            </td>
-        </tr>
-        <tr>
-            <td class="adminTitle">
-                @Html.NopLabelFor(model => model.AdditionalFee):
-            </td>
-            <td class="adminData">
-                @Html.EditorFor(model => model.AdditionalFee)
-                @Html.ValidationMessageFor(model => model.AdditionalFee)
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <button type="submit" name="save" value="save" class="k-button">
-                    Save</button>
-            </td>
-        </tr>
-    </table>
-    
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <p>
+                    <b>Please ensure that nopCommerce primary currency matches CyberSource currency.</b>
+                </p>
+
+                <p>
+                    IPN Handler URL should be set to http://www.yourStore.com/Plugins/PaymentCyberSource/IPNHandler/
+                </p>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.GatewayUrl)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.GatewayUrl)
+                        @Html.ValidationMessageFor(model => model.GatewayUrl)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.MerchantId)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.MerchantId)
+                        @Html.ValidationMessageFor(model => model.MerchantId)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.PublicKey)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.PublicKey)
+                        @Html.ValidationMessageFor(model => model.PublicKey)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.SerialNumber)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.SerialNumber)
+                        @Html.ValidationMessageFor(model => model.SerialNumber)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AdditionalFee)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AdditionalFee)
+                        @Html.ValidationMessageFor(model => model.AdditionalFee)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        &nbsp;
+                    </div>
+                    <div class="col-md-9">
+                        <input type="submit" name="save" class="btn bg-blue" value="@T("Admin.Common.Save")"/>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 }

@@ -46,11 +46,7 @@ namespace Nop.Plugin.Payments.CyberSource
         }
 
         #endregion
-
-        #region Utilities
-
-        #endregion
-
+        
         #region Methods
 
         /// <summary>
@@ -60,8 +56,7 @@ namespace Nop.Plugin.Payments.CyberSource
         /// <returns>Process payment result</returns>
         public ProcessPaymentResult ProcessPayment(ProcessPaymentRequest processPaymentRequest)
         {
-            var result = new ProcessPaymentResult();
-            result.NewPaymentStatus = PaymentStatus.Pending;
+            var result = new ProcessPaymentResult { NewPaymentStatus = PaymentStatus.Pending };
             return result;
         }
 
@@ -71,19 +66,20 @@ namespace Nop.Plugin.Payments.CyberSource
         /// <param name="postProcessPaymentRequest">Payment info required for an order processing</param>
         public void PostProcessPayment(PostProcessPaymentRequest postProcessPaymentRequest)
         {
-            var post = new RemotePost();
-
-            post.FormName = "CyberSource";
-            post.Url = _cyberSourcePaymentSettings.GatewayUrl;
-            post.Method = "POST";
-
+            var post = new RemotePost
+            {
+                FormName = "CyberSource",
+                Url = _cyberSourcePaymentSettings.GatewayUrl,
+                Method = "POST"
+            };
+            
             post.Add("merchantID", _cyberSourcePaymentSettings.MerchantId);
             post.Add("orderPage_timestamp", HostedPaymentHelper.OrderPageTimestamp);
             post.Add("orderPage_transactionType", "authorization");
             post.Add("orderPage_version", "4");
             post.Add("orderPage_serialNumber", _cyberSourcePaymentSettings.SerialNumber);
 
-            post.Add("amount", String.Format(CultureInfo.InvariantCulture, "{0:0.00}", postProcessPaymentRequest.Order.OrderTotal));
+            post.Add("amount", string.Format(CultureInfo.InvariantCulture, "{0:0.00}", postProcessPaymentRequest.Order.OrderTotal));
             post.Add("currency", _currencyService.GetCurrencyById(_currencySettings.PrimaryStoreCurrencyId).CurrencyCode);
             post.Add("orderNumber", postProcessPaymentRequest.Order.Id.ToString());
 
@@ -226,17 +222,14 @@ namespace Nop.Plugin.Payments.CyberSource
                 throw new ArgumentNullException("order");
 
             //CyberSource is the redirection payment method
-            //It also validates whether order is also paid (after redirection) so customers will not be able to pay twice
+            //it also validates whether order is also paid (after redirection) so customers will not be able to pay twice
             
             //payment status should be Pending
             if (order.PaymentStatus != PaymentStatus.Pending)
                 return false;
 
             //let's ensure that at least 1 minute passed after order is placed
-            if ((DateTime.UtcNow - order.CreatedOnUtc).TotalMinutes < 1)
-                return false;
-
-            return true;
+            return !((DateTime.UtcNow - order.CreatedOnUtc).TotalMinutes < 1);
         }
 
         /// <summary>
@@ -262,7 +255,7 @@ namespace Nop.Plugin.Payments.CyberSource
         {
             actionName = "PaymentInfo";
             controllerName = "PaymentCyberSource";
-            routeValues = new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Payments.CyberSource.Controllers" }, { "area", null } };
+            routeValues = new RouteValueDictionary { { "Namespaces", "Nop.Plugin.Payments.CyberSource.Controllers" }, { "area", null } };
         }
 
         public Type GetControllerType()
@@ -272,12 +265,12 @@ namespace Nop.Plugin.Payments.CyberSource
 
         public override void Install()
         {
-            var settings = new CyberSourcePaymentSettings()
+            var settings = new CyberSourcePaymentSettings
             {
                 GatewayUrl = "https://orderpagetest.ic3.com/hop/orderform.jsp",
-                MerchantId = "",
-                PublicKey = "",
-                SerialNumber = "",
+                MerchantId = string.Empty,
+                PublicKey = string.Empty,
+                SerialNumber = string.Empty,
                 AdditionalFee = 0,
             };
             _settingService.SaveSetting(settings);
@@ -298,8 +291,6 @@ namespace Nop.Plugin.Payments.CyberSource
             base.Install();
         }
 
-
-
         public override void Uninstall()
         {
             //locales
@@ -314,7 +305,6 @@ namespace Nop.Plugin.Payments.CyberSource
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint");
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee");
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint");
-            
 
             base.Uninstall();
         }

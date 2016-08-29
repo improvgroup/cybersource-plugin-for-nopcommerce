@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Web.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Payments;
@@ -38,12 +37,14 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
         [ChildActionOnly]
         public ActionResult Configure()
         {
-            var model = new ConfigurationModel();
-            model.GatewayUrl = _cyberSourcePaymentSettings.GatewayUrl;
-            model.MerchantId = _cyberSourcePaymentSettings.MerchantId;
-            model.PublicKey = _cyberSourcePaymentSettings.PublicKey;
-            model.SerialNumber = _cyberSourcePaymentSettings.SerialNumber;
-            model.AdditionalFee = _cyberSourcePaymentSettings.AdditionalFee;
+            var model = new ConfigurationModel
+            {
+                GatewayUrl = _cyberSourcePaymentSettings.GatewayUrl,
+                MerchantId = _cyberSourcePaymentSettings.MerchantId,
+                PublicKey = _cyberSourcePaymentSettings.PublicKey,
+                SerialNumber = _cyberSourcePaymentSettings.SerialNumber,
+                AdditionalFee = _cyberSourcePaymentSettings.AdditionalFee
+            };
 
             return View("~/Plugins/Payments.CyberSource/Views/PaymentCyberSource/Configure.cshtml", model);
         }
@@ -70,8 +71,7 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
         [ChildActionOnly]
         public ActionResult PaymentInfo()
         {
-            var model = new PaymentInfoModel();
-            return View("~/Plugins/Payments.CyberSource/Views/PaymentCyberSource/PaymentInfo.cshtml", model);
+            return View("~/Plugins/Payments.CyberSource/Views/PaymentCyberSource/PaymentInfo.cshtml");
         }
 
         [NonAction]
@@ -96,25 +96,21 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
                 !processor.IsPaymentMethodActive(_paymentSettings) || !processor.PluginDescriptor.Installed)
                 throw new NopException("CyberSource module cannot be loaded");
 
-            if (HostedPaymentHelper.ValidateResponseSign(form, _cyberSourcePaymentSettings.PublicKey))
+            var reasonCode = form["reasonCode"];
+            int orderId;
+
+            if (HostedPaymentHelper.ValidateResponseSign(form, _cyberSourcePaymentSettings.PublicKey) &&
+                !string.IsNullOrEmpty(reasonCode) && reasonCode.Equals("100") &&
+                int.TryParse(form["orderNumber"], out orderId))
             {
-                string reasonCode = form["reasonCode"];
-                if (!String.IsNullOrEmpty(reasonCode) && reasonCode.Equals("100"))
+                var order = _orderService.GetOrderById(orderId);
+                if (order != null && _orderProcessingService.CanMarkOrderAsAuthorized(order))
                 {
-                    int orderId;
-                    if (Int32.TryParse(form["orderNumber"], out orderId))
-                    {
-                        var order = _orderService.GetOrderById(orderId);
-                        if (order != null && _orderProcessingService.CanMarkOrderAsAuthorized(order))
-                        {
-                            _orderProcessingService.MarkAsAuthorized(order);
-                        }
-                    }
+                    _orderProcessingService.MarkAsAuthorized(order);
                 }
             }
 
             return Content("");
-
         }
     }
 }

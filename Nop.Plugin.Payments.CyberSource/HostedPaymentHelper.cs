@@ -2,7 +2,6 @@ using System;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
-using Nop.Core.Configuration;
 
 namespace Nop.Plugin.Payments.CyberSource
 {
@@ -21,7 +20,7 @@ namespace Nop.Plugin.Payments.CyberSource
         #region Methods
         public static string CalcRequestSign(NameValueCollection reqParams, string publicKey)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.Append(reqParams["merchantID"]);
             sb.Append(reqParams["amount"]);
@@ -34,35 +33,34 @@ namespace Nop.Plugin.Payments.CyberSource
 
         public static bool ValidateResponseSign(NameValueCollection rspParams, string publicKey)
         {
-            string transactionSignature = null;
-            string[] signedFieldsArr = null;
+            string transactionSignature;
+            string[] signedFields;
 
             try
             {
                 transactionSignature = rspParams["transactionSignature"];
-                signedFieldsArr = rspParams["signedFields"].Split(',');
+                signedFields = rspParams["signedFields"].Split(',');
             }
             catch (Exception)
             {
                 return false;
             }
 
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < signedFieldsArr.Length; i++)
+            var sb = new StringBuilder();
+            
+            foreach (var signedFild in signedFields)
             {
-                sb.Append(rspParams[signedFieldsArr[i]]);
+                sb.Append(rspParams[signedFild]);
             }
 
-            string s = CalcHMACSHA1Hash(sb.ToString(), publicKey);
-
-            return transactionSignature.Equals(s);
+            return transactionSignature.Equals(CalcHMACSHA1Hash(sb.ToString(), publicKey));
         }
         #endregion
 
         #region Utilities
         private static string CalcHMACSHA1Hash(string s, string publicKey)
         {
-            using (HMACSHA1 cs = new HMACSHA1(Encoding.UTF8.GetBytes(publicKey)))
+            using (var cs = new HMACSHA1(Encoding.UTF8.GetBytes(publicKey)))
             {
                 return Convert.ToBase64String(cs.ComputeHash(Encoding.UTF8.GetBytes(s)));
             }
