@@ -46,7 +46,7 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
                 AdditionalFee = _cyberSourcePaymentSettings.AdditionalFee
             };
 
-            return View("~/Plugins/Payments.CyberSource/Views/PaymentCyberSource/Configure.cshtml", model);
+            return View("~/Plugins/Payments.CyberSource/Views/Configure.cshtml", model);
         }
 
         [HttpPost]
@@ -71,7 +71,7 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
         [ChildActionOnly]
         public ActionResult PaymentInfo()
         {
-            return View("~/Plugins/Payments.CyberSource/Views/PaymentCyberSource/PaymentInfo.cshtml");
+            return View("~/Plugins/Payments.CyberSource/Views/PaymentInfo.cshtml");
         }
 
         [NonAction]

@@ -29,6 +29,7 @@ namespace Nop.Plugin.Payments.CyberSource
         private readonly ICurrencyService _currencyService;
         private readonly CurrencySettings _currencySettings;
         private readonly IWebHelper _webHelper;
+        private readonly ILocalizationService _localizationService;
 
         #endregion
 
@@ -36,13 +37,15 @@ namespace Nop.Plugin.Payments.CyberSource
 
         public CyberSourcePaymentProcessor(CyberSourcePaymentSettings cyberSourcePaymentSettings,
             ISettingService settingService, ICurrencyService currencyService,
-            CurrencySettings currencySettings, IWebHelper webHelper)
+            CurrencySettings currencySettings, IWebHelper webHelper,
+            ILocalizationService localizationService)
         {
             this._cyberSourcePaymentSettings = cyberSourcePaymentSettings;
             this._currencyService = currencyService;
             this._currencySettings = currencySettings;
             this._settingService = settingService;
             this._webHelper = webHelper;
+            this._localizationService = localizationService;
         }
 
         #endregion
@@ -287,6 +290,7 @@ namespace Nop.Plugin.Payments.CyberSource
             this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint", "Enter serial number.");
             this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee", "Additional fee");
             this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint", "Enter additional fee to charge your customers.");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription", "You will be redirected to CyberSource site to complete the order.");
             
             base.Install();
         }
@@ -305,6 +309,7 @@ namespace Nop.Plugin.Payments.CyberSource
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint");
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee");
             this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint");
+            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription");
 
             base.Uninstall();
         }
@@ -384,6 +389,14 @@ namespace Nop.Plugin.Payments.CyberSource
         public bool SkipPaymentInfo
         {
             get { return false; }
+        }
+
+        /// <summary>
+        /// Gets a payment method description that will be displayed on checkout pages in the public store
+        /// </summary>
+        public string PaymentMethodDescription
+        {
+            get { return _localizationService.GetResource("Plugins.Payments.CyberSource.PaymentMethodDescription"); }
         }
 
         #endregion
