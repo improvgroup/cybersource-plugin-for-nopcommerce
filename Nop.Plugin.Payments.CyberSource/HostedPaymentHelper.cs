@@ -2,12 +2,14 @@ using System;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace Nop.Plugin.Payments.CyberSource
 {
     public class HostedPaymentHelper
     {
         #region Properties
+
         internal static string OrderPageTimestamp
         {
             get
@@ -15,9 +17,11 @@ namespace Nop.Plugin.Payments.CyberSource
                 return (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds.ToString().Split('.')[0];
             }
         }
+
         #endregion
 
         #region Methods
+
         public static string CalcRequestSign(NameValueCollection reqParams, string publicKey)
         {
             var sb = new StringBuilder();
@@ -31,7 +35,7 @@ namespace Nop.Plugin.Payments.CyberSource
             return CalcHMACSHA1Hash(sb.ToString(), publicKey).Replace("\n", "");
         }
 
-        public static bool ValidateResponseSign(NameValueCollection rspParams, string publicKey)
+        public static bool ValidateResponseSign(IFormCollection rspParams, string publicKey)
         {
             string transactionSignature;
             string[] signedFields;
@@ -39,7 +43,7 @@ namespace Nop.Plugin.Payments.CyberSource
             try
             {
                 transactionSignature = rspParams["transactionSignature"];
-                signedFields = rspParams["signedFields"].Split(',');
+                signedFields = rspParams["signedFields"].ToString().Split(',');
             }
             catch (Exception)
             {
@@ -55,9 +59,11 @@ namespace Nop.Plugin.Payments.CyberSource
 
             return transactionSignature.Equals(CalcHMACSHA1Hash(sb.ToString(), publicKey));
         }
+
         #endregion
 
         #region Utilities
+
         private static string CalcHMACSHA1Hash(string s, string publicKey)
         {
             using (var cs = new HMACSHA1(Encoding.UTF8.GetBytes(publicKey)))
@@ -65,6 +71,7 @@ namespace Nop.Plugin.Payments.CyberSource
                 return Convert.ToBase64String(cs.ComputeHash(Encoding.UTF8.GetBytes(s)));
             }
         }
+
         #endregion
     }
 }

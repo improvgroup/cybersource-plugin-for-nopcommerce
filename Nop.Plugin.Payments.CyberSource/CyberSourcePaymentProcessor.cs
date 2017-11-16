@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Web.Routing;
+using Microsoft.AspNetCore.Http;
 using Nop.Core;
 using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Orders;
@@ -123,7 +123,7 @@ namespace Nop.Plugin.Payments.CyberSource
                 post.Add("shipTo_postalCode", postProcessPaymentRequest.Order.ShippingAddress.ZipPostalCode);
             }
 
-            post.Add("orderPage_receiptResponseURL", String.Format("{0}checkout/completed", _webHelper.GetStoreLocation(false)));
+            post.Add("orderPage_receiptResponseURL", $"{_webHelper.GetStoreLocation(false)}checkout/completed");
             post.Add("orderPage_receiptLinkText", "Return");
 
             post.Add("orderPage_signaturePublic", HostedPaymentHelper.CalcRequestSign(post.Params, _cyberSourcePaymentSettings.PublicKey));
@@ -222,7 +222,7 @@ namespace Nop.Plugin.Payments.CyberSource
         public bool CanRePostProcessPayment(Order order)
         {
             if (order == null)
-                throw new ArgumentNullException("order");
+                throw new ArgumentNullException(nameof(order));
 
             //CyberSource is the redirection payment method
             //it also validates whether order is also paid (after redirection) so customers will not be able to pay twice
@@ -235,30 +235,26 @@ namespace Nop.Plugin.Payments.CyberSource
             return !((DateTime.UtcNow - order.CreatedOnUtc).TotalMinutes < 1);
         }
 
-        /// <summary>
-        /// Gets a route for provider configuration
-        /// </summary>
-        /// <param name="actionName">Action name</param>
-        /// <param name="controllerName">Controller name</param>
-        /// <param name="routeValues">Route values</param>
-        public void GetConfigurationRoute(out string actionName, out string controllerName, out RouteValueDictionary routeValues)
+        public override string GetConfigurationPageUrl()
         {
-            actionName = "Configure";
-            controllerName = "PaymentCyberSource";
-            routeValues = new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Payments.CyberSource.Controllers" }, { "area", null } };
+            return $"{_webHelper.GetStoreLocation()}Admin/PaymentCyberSource/Configure";
         }
 
-        /// <summary>
-        /// Gets a route for payment info
-        /// </summary>
-        /// <param name="actionName">Action name</param>
-        /// <param name="controllerName">Controller name</param>
-        /// <param name="routeValues">Route values</param>
-        public void GetPaymentInfoRoute(out string actionName, out string controllerName, out RouteValueDictionary routeValues)
+        public void GetPublicViewComponent(out string viewComponentName)
         {
-            actionName = "PaymentInfo";
-            controllerName = "PaymentCyberSource";
-            routeValues = new RouteValueDictionary { { "Namespaces", "Nop.Plugin.Payments.CyberSource.Controllers" }, { "area", null } };
+            viewComponentName = "PaymentCyberSource";
+        }
+
+        public IList<string> ValidatePaymentForm(IFormCollection form)
+        {
+            var warnings = new List<string>();
+            return warnings;
+        }
+        
+        public ProcessPaymentRequest GetPaymentInfo(IFormCollection form)
+        {
+            var paymentInfo = new ProcessPaymentRequest();
+            return paymentInfo;
         }
 
         public Type GetControllerType()
@@ -313,6 +309,7 @@ namespace Nop.Plugin.Payments.CyberSource
 
             base.Uninstall();
         }
+
         #endregion
 
         #region Properies
