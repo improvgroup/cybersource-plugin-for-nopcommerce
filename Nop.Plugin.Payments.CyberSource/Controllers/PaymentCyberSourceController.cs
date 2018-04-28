@@ -79,9 +79,9 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
             return Configure();
         }
         
-        public IActionResult IPNHandler()
+        public IActionResult IPNHandler(IpnModel model)
         {
-            var form = Request.Form;
+            var form = model.Form;
             var processor = _paymentService.LoadPaymentMethodBySystemName("Payments.CyberSource") as CyberSourcePaymentProcessor;
             if (processor == null ||
                 !processor.IsPaymentMethodActive(_paymentSettings) || !processor.PluginDescriptor.Installed)
