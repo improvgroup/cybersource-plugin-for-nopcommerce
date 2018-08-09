@@ -8,7 +8,6 @@ using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Plugins;
-using Nop.Plugin.Payments.CyberSource.Controllers;
 using Nop.Services.Configuration;
 using Nop.Services.Directory;
 using Nop.Services.Localization;
@@ -24,28 +23,31 @@ namespace Nop.Plugin.Payments.CyberSource
     {
         #region Fields
 
-        private readonly CyberSourcePaymentSettings _cyberSourcePaymentSettings;
-        private readonly ISettingService _settingService;
-        private readonly ICurrencyService _currencyService;
         private readonly CurrencySettings _currencySettings;
-        private readonly IWebHelper _webHelper;
+        private readonly CyberSourcePaymentSettings _cyberSourcePaymentSettings;
+        private readonly ICurrencyService _currencyService;
         private readonly ILocalizationService _localizationService;
+        private readonly ISettingService _settingService;
+        private readonly IWebHelper _webHelper;
+        
 
         #endregion
 
         #region Ctor
 
-        public CyberSourcePaymentProcessor(CyberSourcePaymentSettings cyberSourcePaymentSettings,
-            ISettingService settingService, ICurrencyService currencyService,
-            CurrencySettings currencySettings, IWebHelper webHelper,
-            ILocalizationService localizationService)
+        public CyberSourcePaymentProcessor(CurrencySettings currencySettings,
+            CyberSourcePaymentSettings cyberSourcePaymentSettings,
+            ICurrencyService currencyService,
+            ILocalizationService localizationService,
+            ISettingService settingService,
+            IWebHelper webHelper)
         {
+            this._currencySettings = currencySettings;
             this._cyberSourcePaymentSettings = cyberSourcePaymentSettings;
             this._currencyService = currencyService;
-            this._currencySettings = currencySettings;
+            this._localizationService = localizationService;
             this._settingService = settingService;
             this._webHelper = webHelper;
-            this._localizationService = localizationService;
         }
 
         #endregion
@@ -240,9 +242,9 @@ namespace Nop.Plugin.Payments.CyberSource
             return $"{_webHelper.GetStoreLocation()}Admin/PaymentCyberSource/Configure";
         }
 
-        public void GetPublicViewComponent(out string viewComponentName)
+        public string GetPublicViewComponentName()
         {
-            viewComponentName = "PaymentCyberSource";
+            return "PaymentCyberSource";
         }
 
         public IList<string> ValidatePaymentForm(IFormCollection form)
@@ -255,11 +257,6 @@ namespace Nop.Plugin.Payments.CyberSource
         {
             var paymentInfo = new ProcessPaymentRequest();
             return paymentInfo;
-        }
-
-        public Type GetControllerType()
-        {
-            return typeof(PaymentCyberSourceController);
         }
 
         public override void Install()
@@ -275,37 +272,39 @@ namespace Nop.Plugin.Payments.CyberSource
             _settingService.SaveSetting(settings);
 
             //locales
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.RedirectionTip", "You will be redirected to CyberSource site to complete the order.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl", "Gateway URL");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl.Hint", "Enter gateway URL.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId", "Merchant ID");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId.Hint", "Enter merchant ID.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey", "Public Key");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey.Hint", "Enter public key.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber", "Serial Number");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint", "Enter serial number.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee", "Additional fee");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint", "Enter additional fee to charge your customers.");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription", "You will be redirected to CyberSource site to complete the order.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.RedirectionTip", "You will be redirected to CyberSource site to complete the order.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl", "Gateway URL");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl.Hint", "Enter gateway URL.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId", "Merchant ID");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId.Hint", "Enter merchant ID.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey", "Public Key");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey.Hint", "Enter public key.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber", "Serial Number");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint", "Enter serial number.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee", "Additional fee");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint", "Enter additional fee to charge your customers.");
+            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription", "You will be redirected to CyberSource site to complete the order.");
             
             base.Install();
         }
 
         public override void Uninstall()
         {
+            _settingService.DeleteSetting<CyberSourcePaymentSettings>();
+
             //locales
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.RedirectionTip");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl.Hint");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId.Hint");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey.Hint");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint");
-            this.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.RedirectionTip");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.GatewayUrl.Hint");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.MerchantId.Hint");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PublicKey.Hint");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.SerialNumber.Hint");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.AdditionalFee.Hint");
+            _localizationService.DeletePluginLocaleResource("Plugins.Payments.CyberSource.PaymentMethodDescription");
 
             base.Uninstall();
         }

@@ -14,27 +14,26 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
 {
     public class PaymentCyberSourceController : BasePaymentController
     {
-        private readonly ISettingService _settingService;
-        private readonly IPaymentService _paymentService;
-        private readonly IOrderService _orderService;
-        private readonly IOrderProcessingService _orderProcessingService;
         private readonly CyberSourcePaymentSettings _cyberSourcePaymentSettings;
-        private readonly PaymentSettings _paymentSettings;
+        private readonly IOrderProcessingService _orderProcessingService;
+        private readonly IOrderService _orderService;
+        private readonly IPaymentService _paymentService;
         private readonly IPermissionService _permissionService;
+        private readonly ISettingService _settingService;
+       
 
-        public PaymentCyberSourceController(ISettingService settingService, 
-            IPaymentService paymentService, IOrderService orderService, 
-            IOrderProcessingService orderProcessingService, 
-            CyberSourcePaymentSettings cyberSourcePaymentSettings,
-            PaymentSettings paymentSettings,
-            IPermissionService permissionService)
+        public PaymentCyberSourceController(CyberSourcePaymentSettings cyberSourcePaymentSettings,
+            IOrderProcessingService orderProcessingService,
+            IOrderService orderService,
+            IPaymentService paymentService,
+            IPermissionService permissionService,
+            ISettingService settingService)
         {
-            this._settingService = settingService;
-            this._paymentService = paymentService;
-            this._orderService = orderService;
-            this._orderProcessingService = orderProcessingService;
             this._cyberSourcePaymentSettings = cyberSourcePaymentSettings;
-            this._paymentSettings = paymentSettings;
+            this._orderProcessingService = orderProcessingService;
+            this._orderService = orderService;
+            this._paymentService = paymentService;
+            this._settingService = settingService;
             this._permissionService = permissionService;
         }
 
@@ -84,7 +83,7 @@ namespace Nop.Plugin.Payments.CyberSource.Controllers
             var form = model.Form;
             var processor = _paymentService.LoadPaymentMethodBySystemName("Payments.CyberSource") as CyberSourcePaymentProcessor;
             if (processor == null ||
-                !processor.IsPaymentMethodActive(_paymentSettings) || !processor.PluginDescriptor.Installed)
+                !_paymentService.IsPaymentMethodActive(processor) || !processor.PluginDescriptor.Installed)   //__ !processor.IsPaymentMethodActive(_paymentSettings) || !processor.PluginDescriptor.Installed)
                 throw new NopException("CyberSource module cannot be loaded");
 
             var reasonCode = form["reasonCode"];
